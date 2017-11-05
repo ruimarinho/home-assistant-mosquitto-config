@@ -1,0 +1,14 @@
+after_script:
+  - docker images
+
+language: bash
+
+script:
+  - touch passwd
+  - docker run -d --name mosquitto -v $(pwd)/mosquitto.conf:/etc/mosquitto.conf -v $(pwd)/passwd:/etc/mosquitto/passwd ruimarinho/mosquitto -c /etc/mosquitto.conf -v
+  - docker run --rm -it -v $(pwd)/passwd:/etc/mosquitto/passwd ruimarinho/mosquitto mosquitto_passwd -b /etc/mosquitto/passwd foo bar
+  - docker run --rm -it --link mosquitto ruimarinho/mosquitto mosquitto_pub -h mosquitto -u foo -P bar -t foo/bar/1/on -m "Foo is ON"
+  - docker logs mosquitto
+  - docker kill mosquitto
+
+services: docker
